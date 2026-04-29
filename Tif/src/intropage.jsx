@@ -34,7 +34,7 @@ export default function IntroPage() {
             </button>
 
             <button 
-            onClick={() => navigate("/postmeals")}
+            onClick={() => navigate("/login")}
             className="bg-orange-500 px-4 py-2 rounded-lg hover:scale-105 transition">
               Login
             </button>
