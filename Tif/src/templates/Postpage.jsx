@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
-import { MealContext } from "./Mealcontext";
+import { MealContext } from "./MealContext.jsx";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import Navbar from "../components/Navbar.jsx";
 
 export default function PostPage() {
   const { meals, setMeals } = useContext(MealContext);
@@ -30,24 +30,26 @@ export default function PostPage() {
       setForm({ ...form, [name]: value });
     }
   };
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
 
-  const handleSubmit = () => {
-    if (!form.dish || !form.priceMin || !form.time) {
-      alert("Fill required fields ⚠️");
-      return;
-    }
+    const res = await fetch("http://localhost:5000/api/meals", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify({
+        ...form,
+        image: preview,
+        priceMin: Number(form.priceMin),
+        priceMax: Number(form.priceMax),
+      }),
+    });
 
-    const newMeal = {
-      id: Date.now(),
-      ...form,
-      image: preview,
-      rating: 4.5,
-    };
-
-    setMeals([newMeal, ...meals]);
+    const data = await res.json();
     navigate("/home");
   };
-
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <Navbar />
