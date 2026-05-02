@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { checkSession } from "../utils/checkSession";
+import { checkSession } from "../utils/CheckSession";
 
 export default function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");

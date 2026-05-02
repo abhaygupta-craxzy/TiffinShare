@@ -7,7 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/tiffinDB")
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/tiffinDB";
+
+mongoose.connect(MONGO_URI)
   .then(() => console.log("DB connected"))
   .catch(err => console.log(err));
 

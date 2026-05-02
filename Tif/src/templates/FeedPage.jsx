@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-
 export default function FeedPage() {
   const [meals, setMeals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +23,6 @@ export default function FeedPage() {
   useEffect(() => {
     fetchMeals();
   }, []);
-
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -79,16 +77,13 @@ export default function FeedPage() {
               {/* Image Section */}
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"}
+                  src={meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800"}
                   alt={meal.dish}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  onError={(e) => {
-                    e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                  <h3 className="text-xl font-bold text-white shadow-sm leading-tight max-w-[70%]">{meal.dish}</h3>
+                  <h3 className="text-xl font-bold text-white leading-tight max-w-[70%]">{meal.dish}</h3>
                   <div className="bg-orange-500/80 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap">
                     ₹{meal.priceMin}{meal.priceMin !== meal.priceMax ? ` - ${meal.priceMax}` : ''}
                   </div>
@@ -97,8 +92,6 @@ export default function FeedPage() {
 
               {/* Content Section */}
               <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
-                
-                {/* Chef Info */}
                 <div className="flex items-center space-x-3 pb-3 border-b border-white/5">
                   <div className="w-10 h-10 rounded-full bg-gray-800 overflow-hidden border border-white/10">
                     {meal.userId?.avatar ? (
@@ -131,11 +124,10 @@ export default function FeedPage() {
                 <button
                   onClick={async () => {
                     const token = localStorage.getItem("token");
-                    if(!token) {
+                    if (!token) {
                       navigate("/login");
                       return;
                     }
-                    
                     try {
                       const res = await fetch(`http://localhost:5000/api/meals/${meal._id}/claim`, {
                         method: "POST",
@@ -144,15 +136,13 @@ export default function FeedPage() {
                           Authorization: token,
                         }
                       });
-
                       const data = await res.json();
                       if (!res.ok) {
                         alert(data.message || "Failed to claim meal");
                         return;
                       }
-
                       alert("🎉 " + data.message);
-                      fetchMeals(); // refresh the feed to remove claimed meal
+                      fetchMeals();
                     } catch (err) {
                       console.error(err);
                       alert("Server error");
@@ -167,7 +157,6 @@ export default function FeedPage() {
           ))}
         </motion.div>
       )}
-
     </div>
   );
-}
+}
