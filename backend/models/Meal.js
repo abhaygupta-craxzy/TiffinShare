@@ -1,100 +1,23 @@
 const mongoose = require("mongoose");
 
-const mealSchema = new mongoose.Schema(
-  {
-    // 🍛 BASIC INFO
-    dish: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const mealSchema = new mongoose.Schema({
+  dish: String,
+  priceMin: Number,
+  priceMax: Number,
+  time: String,
+  location: String,
+  image: String,
 
-    description: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-    image: {
-      type: String, // store URL (Cloudinary/S3)
-      default: "",
-    },
+  isClaimed: { type: Boolean, default: false },
+  claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-    // 💸 PRICING
-    priceMin: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+  rating: { type: Number, min: 1, max: 5 },
+  reviewText: String,
 
-    priceMax: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    // 📍 DETAILS
-    time: {
-      type: String,
-      required: true,
-    },
-
-    location: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    // 👤 OWNER
-    userId: {
-      type: String,
-      required: true,
-    },
-
-    // ⚡ CLAIM SYSTEM
-    isClaimed: {
-      type: Boolean,
-      default: false,
-    },
-
-    claimedBy: {
-      type: String,
-      default: null,
-    },
-
-    // ⏱ TIME SYSTEM
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-
-    expiresAt: {
-      type: Date,
-      required: true,
-    },
-  },
-  {
-    timestamps: true, // adds updatedAt automatically
-  }
-);
-
-
-// 🚀 INDEXES (performance)
-mealSchema.index({ createdAt: -1 });
-mealSchema.index({ expiresAt: 1 });
-
-
-// 🔥 AUTO DELETE AFTER EXPIRY (MongoDB TTL)
-mealSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-
-// 🧠 OPTIONAL: Prevent invalid pricing
-mealSchema.pre("save", function (next) {
-  if (this.priceMax < this.priceMin) {
-    return next(new Error("priceMax must be >= priceMin"));
-  }
-  next();
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: Date,
 });
-
 
 module.exports = mongoose.model("Meal", mealSchema);

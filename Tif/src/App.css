@@ -1,53 +1,44 @@
+/* Premium Glassmorphism & Utilities */
+
 .glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
+
 .glass-card:hover {
-  border-color: rgba(255, 122, 0, 0.4);
-  box-shadow: 0 0 20px rgba(255, 122, 0, 0.2);
+  border-color: rgba(255, 122, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(255, 122, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-/* Floating Buttons */
-.floating-btn {
-  animation: float 3s ease-in-out infinite;
-  transition: transform 0.2s ease;
-}
-
-.floating-btn:hover {
-  transform: scale(1.08);
-}
-
-/* Glass Card */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  padding: 20px;
-  border-radius: 16px;
-  text-align: center;
+.glass-input {
+  background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 16px;
+  color: white;
+  transition: all 0.3s ease;
 }
 
-/* Floating Emojis */
-.emoji {
+.glass-input:focus {
+  outline: none;
+  border-color: var(--color-orange-500);
+  box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(255, 122, 0, 0.5);
+}
+
+.bg-gradient-orb {
   position: absolute;
-  font-size: 28px;
-  animation: float 4s ease-in-out infinite;
-  opacity: 0.8;
-}
-
-.e1 { top: 20%; left: 10%; animation-delay: 0s; }
-.e2 { top: 30%; right: 15%; animation-delay: 1s; }
-.e3 { bottom: 20%; left: 20%; animation-delay: 2s; }
-.e4 { bottom: 25%; right: 10%; animation-delay: 3s; }
-
-/* Float Animation */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
-  100% { transform: translateY(0px); }
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.5;
+  pointer-events: none;
 }

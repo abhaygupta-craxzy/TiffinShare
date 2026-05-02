@@ -1,239 +1,173 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+
 export default function FeedPage() {
+  const [meals, setMeals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const [meals, setMeals] = useState([]);
-  const [search, setSearch] = useState("");
-  const [selectedMeal, setSelectedMeal] = useState(null);
-  const [selectedPrice, setSelectedPrice] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("token")
-  );
-
-  // 🔄 FETCH MEALS
-  const fetchMeals = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/meals");
-      const data = await res.json();
-      setMeals(data);
-    } catch (err) {
-      console.error(err);
-    }
+  const fetchMeals = () => {
+    fetch("http://localhost:5000/api/meals")
+      .then((res) => res.json())
+      .then((data) => {
+        setMeals(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch meals", err);
+        setIsLoading(false);
+      });
   };
 
   useEffect(() => {
     fetchMeals();
   }, []);
 
-  // ⏳ AUTO REMOVE EXPIRED (extra safety)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMeals((prev) =>
-        prev.filter((meal) => new Date(meal.expiresAt) > new Date())
-      );
-    }, 60000);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // 🔍 FILTER
-  const filteredMeals = meals
-    .filter((meal) => new Date(meal.expiresAt) > new Date())
-    .filter((meal) =>
-      meal?.dish?.toLowerCase().includes(search.toLowerCase())
-    );
-
-  // ⚡ CLAIM
-  const confirmClaim = async () => {
-    if (!selectedPrice) {
-      alert("Select price");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Please login first");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/meals/${selectedMeal._id}/claim`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message);
-        return;
-      }
-
-      // update UI
-      setMeals((prev) =>
-        prev.map((m) => (m._id === selectedMeal._id ? data : m))
-      );
-
-      setSelectedMeal(null);
-    } catch (err) {
-      console.error(err);
-    }
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
-  // ⏳ TIME LEFT
-  const getTimeLeft = (expiresAt) => {
-    const diff = new Date(expiresAt) - new Date();
-    if (diff <= 0) return "Expired";
-
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    return `${h}h ${m}m left`;
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 },
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pt-20 px-6">
-
-      {/* 🔝 NAVBAR */}
-      <nav className="fixed top-0 left-0 w-full bg-black/50 backdrop-blur-md border-b border-gray-800 px-6 py-4 flex justify-between items-center">
-
-        <h1
-          onClick={() => navigate("/")}
-          className="text-orange-400 font-bold cursor-pointer"
+    <div className="px-6 py-10 max-w-7xl mx-auto relative">
+      <div className="flex justify-between items-center mb-10">
+        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-500">
+          Available Meals 🍽️
+        </h2>
+        <button
+          onClick={() => navigate("/postmeals")}
+          className="bg-orange-500/10 text-orange-400 border border-orange-500/30 hover:bg-orange-500 hover:text-white px-4 py-2 rounded-lg transition-all"
         >
-          TiffinShare 🍱
-        </h1>
-
-        {isLoggedIn ? (
-          <button
-            onClick={() => navigate("/profile")}
-            className="bg-orange-500 px-4 py-2 rounded"
-          >
-            Profile 👤
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate("/login")}
-            className="bg-orange-500 px-4 py-2 rounded"
-          >
-            Login 🔐
-          </button>
-        )}
-      </nav>
-
-      {/* 🔍 SEARCH */}
-      <input
-        type="text"
-        placeholder="Search meals..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-6 bg-gray-900 border border-gray-800 px-4 py-2 rounded"
-      />
-
-      {/* ❌ EMPTY */}
-      {filteredMeals.length === 0 && (
-        <p className="text-center text-gray-400 mt-10">
-          No meals available 😕
-        </p>
-      )}
-
-      {/* 🍱 GRID */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {filteredMeals.map((meal) => (
-          <div key={meal._id} className="bg-white/5 rounded-xl border border-gray-800">
-
-            {meal.image && (
-              <img
-                src={meal.image}
-                alt={meal.dish}
-                className="w-full h-48 object-cover rounded-t-xl"
-              />
-            )}
-
-            <div className="p-4">
-              <h3 className="font-semibold">{meal.dish}</h3>
-
-              <p className="text-orange-400">
-                ₹{meal.priceMin}–₹{meal.priceMax}
-              </p>
-
-              <p className="text-sm text-gray-400">
-                {meal.time} | {meal.location}
-              </p>
-
-              <p className="text-xs text-gray-500">
-                ⏳ {getTimeLeft(meal.expiresAt)}
-              </p>
-
-              {meal.isClaimed ? (
-                <button className="w-full mt-3 bg-gray-700 py-2 rounded">
-                  Claimed ❌
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setSelectedMeal(meal);
-                    setSelectedPrice(null);
-                  }}
-                  className="w-full mt-3 bg-orange-500 py-2 rounded"
-                >
-                  Claim ⚡
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+          + Post Meal
+        </button>
       </div>
 
-      {/* 🧾 CLAIM MODAL */}
-      {selectedMeal && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center">
-
-          <div className="bg-gray-900 p-6 rounded text-center">
-
-            <h3 className="mb-4">{selectedMeal.dish}</h3>
-
-            {[selectedMeal.priceMin, selectedMeal.priceMax].map((price) => (
-              <button
-                key={price}
-                onClick={() => setSelectedPrice(price)}
-                className={`m-2 px-3 py-1 rounded ${
-                  selectedPrice === price
-                    ? "bg-orange-500"
-                    : "bg-gray-800"
-                }`}
-              >
-                ₹{price}
-              </button>
-            ))}
-
-            <button
-              onClick={confirmClaim}
-              className="block w-full mt-3 bg-orange-500 py-2 rounded"
-            >
-              Confirm
-            </button>
-
-            <button
-              onClick={() => setSelectedMeal(null)}
-              className="mt-2 text-gray-400"
-            >
-              Cancel
-            </button>
-
-          </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
         </div>
+      ) : meals.length === 0 ? (
+        <div className="glass-card text-center py-16">
+          <p className="text-xl text-gray-400">No meals available right now 😔</p>
+          <p className="text-sm text-gray-500 mt-2">Check back later or post one yourself!</p>
+        </div>
+      ) : (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
+          {meals.map((meal) => (
+            <motion.div
+              key={meal._id}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              className="glass-card overflow-hidden group flex flex-col h-full !p-0"
+            >
+              {/* Image Section */}
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"}
+                  alt={meal.dish}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    e.target.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                  <h3 className="text-xl font-bold text-white shadow-sm leading-tight max-w-[70%]">{meal.dish}</h3>
+                  <div className="bg-orange-500/80 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap">
+                    ₹{meal.priceMin}{meal.priceMin !== meal.priceMax ? ` - ${meal.priceMax}` : ''}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
+                
+                {/* Chef Info */}
+                <div className="flex items-center space-x-3 pb-3 border-b border-white/5">
+                  <div className="w-10 h-10 rounded-full bg-gray-800 overflow-hidden border border-white/10">
+                    {meal.userId?.avatar ? (
+                      <img src={meal.userId.avatar} alt="chef" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-sm">👨‍🍳</div>
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <p className="text-sm font-medium text-gray-200 line-clamp-1">{meal.userId?.name || "Anonymous Chef"}</p>
+                    <div className="flex items-center text-xs text-yellow-400">
+                      <span>★</span>
+                      <span className="ml-1 text-gray-400">
+                        {meal.userId?.ratingAverage ? meal.userId.ratingAverage.toFixed(1) : "New"} 
+                        {meal.userId?.ratingCount ? ` (${meal.userId.ratingCount})` : ""}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span className="mr-2">⏰</span> {meal.time}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span className="mr-2">📍</span> {meal.location}
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    const token = localStorage.getItem("token");
+                    if(!token) {
+                      navigate("/login");
+                      return;
+                    }
+                    
+                    try {
+                      const res = await fetch(`http://localhost:5000/api/meals/${meal._id}/claim`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: token,
+                        }
+                      });
+
+                      const data = await res.json();
+                      if (!res.ok) {
+                        alert(data.message || "Failed to claim meal");
+                        return;
+                      }
+
+                      alert("🎉 " + data.message);
+                      fetchMeals(); // refresh the feed to remove claimed meal
+                    } catch (err) {
+                      console.error(err);
+                      alert("Server error");
+                    }
+                  }}
+                  className="w-full mt-2 bg-white/5 hover:bg-orange-500 border border-white/10 hover:border-orange-500 text-white font-medium py-2.5 rounded-lg transition-all shadow-sm"
+                >
+                  Claim Meal
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
+
     </div>
   );
-}
+}

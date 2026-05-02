@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -8,6 +9,8 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
     try {
@@ -22,60 +25,80 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message);
+        setError(data.message || "Login failed");
         return;
       }
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("loginTime", Date.now());
 
-      // ✅ FIXED REDIRECT
       window.location.href = "/home";
 
     } catch (err) {
       console.error(err);
+      setError("Server error");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
+    <div className="flex items-center justify-center min-h-[80vh]">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="glass-card w-full max-w-md p-8 relative overflow-hidden"
+      >
+        <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-orange-500/30 blur-3xl rounded-full pointer-events-none"></div>
 
-      <div className="bg-white/5 backdrop-blur-md p-8 rounded-xl border border-gray-800 w-full max-w-md">
-
-        <h2 className="text-2xl font-bold text-center mb-6 text-orange-400">
+        <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600 glow-text">
           Welcome Back 🍱
         </h2>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 px-4 py-2 rounded bg-gray-900 border border-gray-700"
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-red-400 text-sm mb-4 text-center bg-red-500/10 p-2 rounded"
+          >
+            {error}
+          </motion.p>
+        )}
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-6 px-4 py-2 rounded bg-gray-900 border border-gray-700"
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
+        <div className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full px-4 py-3 rounded-lg glass-input"
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
 
-        <button
-          onClick={handleLogin}
-          className="w-full bg-orange-500 py-2 rounded hover:scale-105 transition"
-        >
-          Login 🚀
-        </button>
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-lg glass-input"
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
 
-        <p className="text-sm text-gray-400 mt-4 text-center">
-          Don’t have an account?{" "}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleLogin}
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-3 rounded-lg transition-all shadow-lg shadow-orange-500/25 mt-4"
+          >
+            Login 🚀
+          </motion.button>
+        </div>
+
+        <p className="text-sm text-gray-400 mt-6 text-center">
+          Don't have an account?{" "}
           <span
-            className="text-orange-400 cursor-pointer"
+            className="text-orange-400 cursor-pointer hover:underline"
             onClick={() => navigate("/register")}
           >
             Register
           </span>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
-}
+}

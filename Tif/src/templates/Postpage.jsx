@@ -1,147 +1,147 @@
-import React, { useState, useContext } from "react";
-import { MealContext } from "./MealContext.jsx";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar.jsx";
+import { motion } from "framer-motion";
 
 export default function PostPage() {
-  const { meals, setMeals } = useContext(MealContext);
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     dish: "",
-    description: "",
     priceMin: "",
     priceMax: "",
     time: "",
     location: "",
-    image: null,
+    image: "",
   });
 
-  const [preview, setPreview] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-
-    if (files) {
-      const file = files[0];
-      setForm({ ...form, image: file });
-      setPreview(URL.createObjectURL(file));
-    } else {
-      setForm({ ...form, [name]: value });
-    }
-  };
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
 
-    const res = await fetch("http://localhost:5000/api/meals", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token,
-      },
-      body: JSON.stringify({
-        ...form,
-        image: preview,
-        priceMin: Number(form.priceMin),
-        priceMax: Number(form.priceMax),
-      }),
-    });
+    if (!token) {
+      alert("Login required");
+      return;
+    }
 
-    const data = await res.json();
-    navigate("/home");
+    if (!form.dish || !form.priceMin || !form.priceMax) {
+      alert("Please fill required fields (Dish, Prices)");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/meals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          ...form,
+          priceMin: Number(form.priceMin),
+          priceMax: Number(form.priceMax),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        setIsLoading(false);
+        return;
+      }
+
+      navigate("/home");
+
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+    }
   };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <Navbar />
+    <div className="flex items-center justify-center py-12 px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card w-full max-w-2xl p-8 relative overflow-hidden"
+      >
+        <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-orange-500/20 blur-3xl rounded-full pointer-events-none"></div>
 
-      {/* Center Card */}
-      <div className="flex justify-center items-center pt-28 px-4">
-        
-        <div className="w-full max-w-md bg-white/5 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
+        <h2 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
+          Post a Meal 🍱
+        </h2>
 
-          <h2 className="text-2xl font-bold mb-6 text-center">
-            Post Your Meal 🍱
-          </h2>
-
-          {/* Image Upload */}
-          <label className="block mb-2 text-sm text-gray-400">
-            Upload Food Image
-          </label>
-
-          <input
-            type="file"
-            name="image"
-            onChange={handleChange}
-            className="mb-4"
-          />
-
-          {preview && (
-            <img
-              src={preview}
-              className="w-full h-40 object-cover rounded-xl mb-4"
-            />
-          )}
-
-          {/* Dish */}
-          <input
-            name="dish"
-            placeholder="Dish Name"
-            onChange={handleChange}
-            className="input mb-3"
-          />
-
-          {/* Description */}
-          <textarea
-            name="description"
-            placeholder="Food Description"
-            onChange={handleChange}
-            className="input mb-3"
-          />
-
-          {/* Price Row */}
-          <div className="flex gap-3 mb-3">
-            <input
-              name="priceMin"
-              type="number"
-              placeholder="Min ₹"
-              onChange={handleChange}
-              className="input"
-            />
-            <input
-              name="priceMax"
-              type="number"
-              placeholder="Max ₹"
-              onChange={handleChange}
-              className="input"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Dish Name *</label>
+            <input 
+              placeholder="e.g. Rajma Chawal" 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, dish: e.target.value })} 
             />
           </div>
 
-          {/* Time */}
-          <input
-            name="time"
-            type="time"
-            onChange={handleChange}
-            className="input mb-3"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Min Price (₹) *</label>
+            <input 
+              type="number"
+              placeholder="50" 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, priceMin: e.target.value })} 
+            />
+          </div>
 
-          {/* Location */}
-          <input
-            name="location"
-            placeholder="Pickup Location"
-            onChange={handleChange}
-            className="input mb-5"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Max Price (₹) *</label>
+            <input 
+              type="number"
+              placeholder="100" 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, priceMax: e.target.value })} 
+            />
+          </div>
 
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-orange-500 py-3 rounded-xl text-lg hover:scale-105 transition"
-          >
-            Post Meal 🚀
-          </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Time Available</label>
+            <input 
+              placeholder="1:00 PM - 3:00 PM" 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, time: e.target.value })} 
+            />
+          </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">Location</label>
+            <input 
+              placeholder="Hostel A, Room 101" 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, location: e.target.value })} 
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-400 mb-2">Image URL</label>
+            <input 
+              placeholder="https://..." 
+              className="w-full px-4 py-3 rounded-lg glass-input"
+              onChange={(e) => setForm({ ...form, image: e.target.value })} 
+            />
+          </div>
         </div>
-      </div>
+
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSubmit} 
+          disabled={isLoading}
+          className="w-full mt-8 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-4 rounded-lg transition-all shadow-lg shadow-orange-500/25"
+        >
+          {isLoading ? "Posting..." : "Share Meal 🚀"}
+        </motion.button>
+      </motion.div>
     </div>
   );
-}
+}

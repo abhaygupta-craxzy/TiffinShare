@@ -1,89 +1,77 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export default function IntroPage() {
   const navigate = useNavigate();
-
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("token")
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
   }, []);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.3 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-6 relative overflow-hidden">
-
-      {/* 🔝 NAVBAR */}
-      <nav className="absolute top-0 left-0 w-full flex justify-between items-center px-6 py-4 bg-black/40 backdrop-blur-md border-b border-gray-800">
-        
-        <h1
-          onClick={() => navigate("/")}
-          className="text-orange-400 font-bold text-lg cursor-pointer"
-        >
-          TiffinShare 🍱
-        </h1>
-
-        {isLoggedIn ? (
-          <button
-            onClick={() => navigate("/profile")}
-            className="bg-orange-500 px-4 py-2 rounded-lg"
-          >
-            Profile 👤
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate("/login")}
-            className="bg-orange-500 px-4 py-2 rounded-lg"
-          >
-            Login 🔐
-          </button>
-        )}
-      </nav>
+    <div className="min-h-[90vh] flex flex-col items-center justify-center px-6 relative overflow-hidden">
+      
+      {/* 🌌 BACKGROUND GLOW */}
+      <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-orange-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="absolute bottom-[10%] right-[10%] w-80 h-80 bg-purple-500/20 blur-[120px] rounded-full pointer-events-none"></div>
 
       {/* 🌟 HERO TEXT */}
-      <div className="text-center max-w-2xl">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="text-center max-w-3xl z-10"
+      >
+        <motion.div variants={itemVariants} className="inline-block mb-4 px-4 py-1.5 rounded-full glass-card border border-orange-500/30 text-orange-400 text-sm font-semibold tracking-wide uppercase">
+          Say goodbye to boring mess food 🚀
+        </motion.div>
 
-        <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-          Tired of mess food? 😩 <br />
-          <span className="text-orange-400">
-            Grab ghar ka khana 🍛
-          </span>
-        </h2>
+        <motion.h2 variants={itemVariants} className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
+          Craving <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-500 glow-text">Ghar Ka Khana?</span>
+        </motion.h2>
 
-        <p className="text-gray-400 mb-8">
-          Students around you are sharing fresh homemade meals.  
-          Find something tasty, claim it, and enjoy 😋
-        </p>
+        <motion.p variants={itemVariants} className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto font-light">
+          Students around you are sharing fresh, homemade meals. 
+          Discover tasty dishes, claim them instantly, and enjoy real food.
+        </motion.p>
 
         {/* 🎯 CTA BUTTONS */}
-        <div className="flex gap-6 justify-center flex-wrap">
-
-          <button
+        <motion.div variants={itemVariants} className="flex gap-4 justify-center flex-col sm:flex-row">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/home")}
-            className="bg-orange-500 px-6 py-3 rounded-xl text-lg hover:scale-105 transition"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-orange-500/40 transition-all text-white"
           >
             Explore Meals 🍽️
-          </button>
+          </motion.button>
 
-          <button
-            onClick={() =>
-              isLoggedIn ? navigate("/postmeals") : navigate("/login")
-            }
-            className="border border-orange-400 text-orange-400 px-6 py-3 rounded-xl text-lg hover:scale-105 transition"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => (isLoggedIn ? navigate("/postmeals") : navigate("/login"))}
+            className="glass-card border border-white/10 hover:border-orange-400/50 hover:bg-white/5 px-8 py-4 rounded-xl text-lg font-semibold transition-all text-white"
           >
             Share Your Tiffin 📦
-          </button>
-
-        </div>
-      </div>
-
-      {/* 🌌 BACKGROUND GLOW */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-orange-500/20 blur-3xl rounded-full"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-orange-400/20 blur-3xl rounded-full"></div>
-
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </div>
   );
-}
+}
