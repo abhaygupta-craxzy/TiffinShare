@@ -8,6 +8,7 @@ import LoginPage from "./templates/loginpage.jsx";
 import ProfilePage from "./templates/ProfilePage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import RegisterPage from "./templates/RegisterPage.jsx";
+import LeaderboardPage from "./templates/LeaderboardPage.jsx";
 import { MealProvider } from "./templates/MealContext.jsx";
 import Layout from "./components/Layout.jsx";
 
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/home" element={<FeedPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
 
             {/* 🔐 PROTECTED ROUTES */}
             <Route

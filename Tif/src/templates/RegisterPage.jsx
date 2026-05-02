@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialRefCode = searchParams.get("ref") || "";
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
+    referredCode: initialRefCode,
   });
   const [error, setError] = useState("");
 
@@ -91,6 +94,14 @@ export default function RegisterPage() {
             placeholder="Password"
             className="w-full px-4 py-3 rounded-lg glass-input"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+
+          <input
+            type="text"
+            placeholder="Referral Code (Optional)"
+            value={form.referredCode}
+            className="w-full px-4 py-3 rounded-lg glass-input text-orange-200 placeholder-orange-500/50"
+            onChange={(e) => setForm({ ...form, referredCode: e.target.value })}
           />
 
           <motion.button

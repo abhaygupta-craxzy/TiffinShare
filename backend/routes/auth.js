@@ -3,21 +3,41 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 
 // ✅ REGISTER
 router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, referredCode } = req.body;
 
   let user = await User.findOne({ email });
   if (user) return res.status(400).json({ message: "User exists" });
 
   const hashed = await bcrypt.hash(password, 10);
+  
+  // Generate a unique 6-character referral code
+  const referralCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+  
+  let referredByUserId = null;
+  
+  // Check if referredCode is valid
+  if (referredCode) {
+    const referringUser = await User.findOne({ referralCode: referredCode });
+    if (referringUser) {
+      referredByUserId = referringUser._id;
+      // Increment points for the referrer
+      referringUser.points = (referringUser.points || 0) + 50;
+      await referringUser.save();
+    }
+  }
 
   user = new User({
     name,
     email,
     password: hashed,
+    referralCode,
+    referredBy: referredByUserId,
+    points: 0
   });
 
   await user.save();
@@ -65,6 +85,13 @@ router.get("/profile", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
+    
+    // Lazily generate referral code for existing users who don't have one
+    if (!user.referralCode) {
+      user.referralCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+      await user.save();
+    }
+    
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -117,6 +144,21 @@ router.post("/rate/:id", auth, async (req, res) => {
       ratingCount: targetUser.ratingCount
     });
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ GET LEADERBOARD
+router.get("/leaderboard", async (req, res) => {
+  try {
+    const topUsers = await User.find({})
+      .sort({ points: -1 })
+      .limit(20)
+      .select("name avatar points ratingAverage");
+      
+    res.json(topUsers);
+  } catch (err) {
+    console.error("LEADERBOARD ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

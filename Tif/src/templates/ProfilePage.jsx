@@ -266,6 +266,39 @@ export default function ProfilePage() {
               >
                 {isLoading ? "Saving..." : "Save Profile 💾"}
               </motion.button>
+
+              {/* Refer and Earn Section */}
+              <div className="mt-8 p-6 rounded-xl border border-orange-500/30 bg-orange-500/5 relative overflow-hidden">
+                <div className="absolute top-[-20px] right-[-20px] w-24 h-24 bg-orange-500/20 blur-2xl rounded-full pointer-events-none"></div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center">
+                    <span className="mr-2">🎁</span> Refer & Earn
+                  </h3>
+                  <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-md">
+                    {profile.points || 0} Points
+                  </div>
+                </div>
+                <p className="text-sm text-gray-400 mb-4">
+                  Invite your friends to TiffinShare and earn 50 points for every successful sign-up! Rise up the leaderboard and show off your status.
+                </p>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`http://localhost:5173/register?ref=${profile.referralCode || ""}`}
+                    className="flex-grow px-4 py-2 rounded-lg bg-black/40 border border-white/10 text-gray-300 text-sm focus:outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`http://localhost:5173/register?ref=${profile.referralCode || ""}`);
+                      alert("Referral link copied! 📋");
+                    }}
+                    className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
+                  >
+                    Copy Link
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
 

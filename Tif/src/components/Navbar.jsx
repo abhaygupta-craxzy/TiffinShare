@@ -26,6 +26,12 @@ export default function Navbar() {
         >
           Explore
         </button>
+        <button
+          onClick={() => navigate("/leaderboard")}
+          className={`text-sm font-medium hover:text-orange-400 transition flex items-center ${location.pathname === "/leaderboard" ? "text-orange-400" : "text-gray-300"}`}
+        >
+          <span className="mr-1">🏆</span> Leaderboard
+        </button>
         
         {isLoggedIn ? (
           <>
